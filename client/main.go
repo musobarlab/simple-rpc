@@ -25,6 +25,21 @@ func (c *Client) Add(x, y float64) service.Result {
 	return result
 }
 
+func (c *Client) AddAsync(x, y float64) service.Result {
+	inputs := &service.Inputs{X: x, Y: y}
+
+	var result service.Result
+	addCall := c.c.Go("Calculator.Add", inputs, &result, nil)
+
+	resCall := <-addCall.Done
+
+	if resCall.Error != nil {
+		result = service.Result{Error: resCall.Error}
+	}
+
+	return result
+}
+
 func (c *Client) Div(x, y float64) service.Result {
 	inputs := &service.Inputs{X: x, Y: y}
 
@@ -80,9 +95,11 @@ func main() {
 	divRes := calculator.Div(10.0, 0)
 	mulRes := calculator.Mul(10.0, 5.0)
 	subRes := calculator.Sub(10.0, 5.0)
+	addAsyncRes := calculator.AddAsync(100.0, 20.0)
 
 	fmt.Println(addRes.Z)
 	fmt.Println(divRes)
 	fmt.Println(mulRes.Z)
 	fmt.Println(subRes.Z)
+	fmt.Println(addAsyncRes)
 }
